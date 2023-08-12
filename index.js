@@ -16,13 +16,10 @@ const io = socketIo(server, {
 });
 
 // Set up MongoDB connection
-mongoose.connect(
-  "mongodb+srv://admin:admin@mongo.h9vbr7w.mongodb.net/chat-rooms?retryWrites=true&w=majority",
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+mongoose.connect("mongodb+srv://your-connection-string", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => {
@@ -79,6 +76,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(5000, () => {
-  console.log("Server is running on port 5000");
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
