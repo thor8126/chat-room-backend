@@ -5,28 +5,27 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
+app.use(cors());
 const server = http.createServer(app);
 
-// Initialize Socket.io with CORS options
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:5173", // Replace with your frontend's origin
-    methods: ["GET", "POST"],
-  },
-});
+// Initialize Socket.io without CORS options
+const io = socketIo(server);
 
 // Set up MongoDB connection
-mongoose.connect("mongodb+srv://your-connection-string", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(
+  "mongodb+srv://admin:admin@mongo.h9vbr7w.mongodb.net/chat-rooms?retryWrites=true&w=majority",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
-// Create a simple message schema
+// Create a message schema
 const messageSchema = new mongoose.Schema({
   user: String,
   text: String,
@@ -34,16 +33,6 @@ const messageSchema = new mongoose.Schema({
   room: String,
 });
 const Message = mongoose.model("Message", messageSchema);
-
-app.get("/getMessages", async (req, res) => {
-  try {
-    const messages = await Message.find().sort({ timestamp: 1 }); // Retrieve messages sorted by timestamp
-    res.json(messages);
-  } catch (error) {
-    console.error("Error fetching messages:", error);
-    res.status(500).json({ error: "Error fetching messages" });
-  }
-});
 
 io.on("connection", (socket) => {
   console.log("A user connected");
@@ -74,6 +63,17 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("A user disconnected");
   });
+});
+
+app.get("/getMessages/:room", async (req, res) => {
+  const room = req.params.room;
+  try {
+    const messages = await Message.find({ room }).sort({ timestamp: 1 }); // Retrieve messages for the specified room sorted by timestamp
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).json({ error: "Error fetching messages" });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
