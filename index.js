@@ -7,24 +7,18 @@ require("dotenv").config();
 
 const app = express();
 
-// app.use((req, res, next) => {
-//   res.header(
-//     "Access-Control-Allow-Origin",
-//     "https://chat-room-frontend.vercel.app"
-//   );
-//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Requested-With, Content-Type, Accept"
-//   );
-//   next();
-// });
-
-app.use(cors({ origin: true }));
+app.use(cors());
 
 const server = http.createServer(app);
 
-const io = socketIo(server);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["my-custom-header"],
+    credentials: true,
+  },
+});
 
 mongoose.connect(process.env.MONGO, {
   useNewUrlParser: true,
