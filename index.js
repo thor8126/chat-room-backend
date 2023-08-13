@@ -3,6 +3,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
@@ -23,13 +24,10 @@ const server = http.createServer(app);
 
 const io = socketIo(server);
 
-mongoose.connect(
-  "mongodb+srv://admin:admin@mongo.h9vbr7w.mongodb.net/chat-rooms?retryWrites=true&w=majority",
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+mongoose.connect(process.env.MONGO, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => {
